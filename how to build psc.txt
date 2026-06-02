@@ -1,0 +1,2 @@
+cd /mnt/c/Users/Daniel/Documents/pscstore/RetroArch-1.8.8
+DOCKER_REBUILD_IMAGE=1 PACK_UPX=1 ./docker-build-retroarch.sh

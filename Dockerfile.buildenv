@@ -1,0 +1,30 @@
+FROM debian:stretch
+
+ARG UPX_VERSION=4.2.4
+
+# PSC-compatible cross build env (armhf, Debian stretch-era userspace).
+RUN set -e; \
+  sed -i "s|deb.debian.org/debian|archive.debian.org/debian|g" /etc/apt/sources.list; \
+  sed -i "s|security.debian.org/debian-security|archive.debian.org/debian-security|g" /etc/apt/sources.list || true; \
+  sed -i "/stretch-updates/d" /etc/apt/sources.list; \
+  echo "Acquire::Check-Valid-Until \"false\";" > /etc/apt/apt.conf.d/99no-check-valid-until; \
+  dpkg --add-architecture armhf; \
+  apt-get update; \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    ca-certificates make pkg-config patchelf wget xz-utils \
+    gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf \
+    libc6-dev:armhf \
+    libasound2-dev:armhf libudev-dev:armhf libxkbcommon-dev:armhf \
+    libsdl2-dev:armhf \
+    libegl1-mesa-dev:armhf libgles2-mesa-dev:armhf libdrm-dev:armhf libgbm-dev:armhf \
+    libwayland-dev:armhf wayland-protocols \
+    libfreetype6-dev:armhf zlib1g-dev:armhf; \
+  wget -qO /tmp/upx.tar.xz "https://github.com/upx/upx/releases/download/v${UPX_VERSION}/upx-${UPX_VERSION}-amd64_linux.tar.xz"; \
+  tar -xJf /tmp/upx.tar.xz -C /tmp; \
+  install -m 0755 "/tmp/upx-${UPX_VERSION}-amd64_linux/upx" /usr/local/bin/upx; \
+  rm -rf /tmp/upx*; \
+  rm -rf /var/lib/apt/lists/*
+
+ENV PKG_CONFIG_LIBDIR=/usr/lib/arm-linux-gnueabihf/pkgconfig:/usr/share/pkgconfig
+ENV PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig
+ENV PKG_CONFIG_SYSROOT_DIR=/
