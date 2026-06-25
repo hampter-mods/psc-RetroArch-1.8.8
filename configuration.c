@@ -3272,6 +3272,31 @@ end:
    return ret;
 }
 
+static void fill_override_content_dir_name(char *content_dir_name,
+      size_t size, const char *rarch_path_basename)
+{
+   if (!content_dir_name || !size)
+      return;
+
+   content_dir_name[0] = '\0';
+
+   if (string_is_empty(rarch_path_basename))
+      return;
+
+   /* Project Eris disc launcher content is exposed via
+    * cdrom://driveX(.cue) / cdrom://disc_launcher(.cue), but we want it
+    * to share the same content-dir override scope as stock title launches. */
+   if (string_starts_with(rarch_path_basename, "cdrom://drive") ||
+       string_starts_with(rarch_path_basename, "cdrom://disc_launcher"))
+   {
+      strlcpy(content_dir_name, "title", size);
+      return;
+   }
+
+   fill_pathname_parent_dir_name(content_dir_name,
+         rarch_path_basename, size);
+}
+
 /**
  * config_load_override:
  *
@@ -3307,9 +3332,8 @@ bool config_load_override(void *data)
    const char *game_name                  = path_basename(rarch_path_basename);
    char content_dir_name[PATH_MAX_LENGTH];
 
-   if (!string_is_empty(rarch_path_basename))
-      fill_pathname_parent_dir_name(content_dir_name,
-            rarch_path_basename, sizeof(content_dir_name));
+   fill_override_content_dir_name(content_dir_name,
+         sizeof(content_dir_name), rarch_path_basename);
 
    if (string_is_empty(core_name) || string_is_empty(game_name))
       return false;
@@ -3539,9 +3563,8 @@ bool config_load_remap(const char *directory_input_remapping,
    if (string_is_empty(directory_input_remapping))
       return false;
 
-   if (!string_is_empty(rarch_path_basename))
-      fill_pathname_parent_dir_name(content_dir_name,
-            rarch_path_basename, sizeof(content_dir_name));
+   fill_override_content_dir_name(content_dir_name,
+         sizeof(content_dir_name), rarch_path_basename);
 
    /* path to the directory containing retroarch.cfg (prefix)    */
    remap_directory                        = (char*)
@@ -4049,8 +4072,8 @@ bool config_save_overrides(enum override_type type, void *data)
    const char *game_name                       = path_basename(rarch_path_basename);
    char content_dir_name[PATH_MAX_LENGTH];
 
-   if (!string_is_empty(rarch_path_basename))
-      fill_pathname_parent_dir_name(content_dir_name, rarch_path_basename, sizeof(content_dir_name));
+   fill_override_content_dir_name(content_dir_name,
+         sizeof(content_dir_name), rarch_path_basename);
 
    if (string_is_empty(core_name) || string_is_empty(game_name))
       return false;

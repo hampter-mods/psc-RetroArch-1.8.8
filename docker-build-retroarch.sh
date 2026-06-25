@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_DIR="$(cd "${ROOT_DIR}/.." && pwd)"
+SOURCE_DIR_NAME="$(basename "${ROOT_DIR}")"
 
 DOCKER_BIN="${DOCKER:-docker}"
 DOCKER_SUDO="${DOCKER_SUDO:-sudo}"
@@ -25,7 +26,7 @@ fi
 echo "[docker] building RetroArch inside ${DOCKER_IMAGE}"
 ${DOCKER_SUDO} "${DOCKER_BIN}" run --rm -it \
   -v "${WORKSPACE_DIR}:/work" \
-  -w /work/RetroArch-1.8.8 \
+  -w "/work/${SOURCE_DIR_NAME}" \
   -e HOST_UID="$(id -u)" \
   -e HOST_GID="$(id -g)" \
   -e PACK_UPX="${PACK_UPX}" \
